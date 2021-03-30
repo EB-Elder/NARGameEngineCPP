@@ -4,6 +4,15 @@
 #include "Context.h"
 #include "Timer.h"
 #include <iostream>
+#include <thread>
+
+
+
+Engine::Engine() {
+
+	nbThread = thread::hardware_concurrency();
+
+}
 
 void Engine::ProcessSystems(double elapsedTime)
 {
@@ -38,7 +47,7 @@ bool Engine::Initialize()
 
 	// Les systemes pourraient etre cree de facon data-driven, plugins, ou en dur
 	EngineSystem* system = new EngineSystem;
-	system->Create();
+	system->Create(thread::hardware_concurrency(), &listObject);
 	system->Initialize();
 
 	m_AIEngine = system;
@@ -71,4 +80,23 @@ void Engine::Update(Context& context)
 		elapsedTime = 0.10;
 
 	ProcessSystems(elapsedTime);
+}
+
+bool EngineSystem::Create(int nbThread, std::vector<Object*>* listeObjet) {
+
+	int threadNbObject = listeObjet->size();
+
+	for (int i = 0; i < nbThread; i++) {
+
+		fork.push_back(std::thread(&EngineSystem::traitement, i * threadNbObject, (i * threadNbObject) + threadNbObject));
+	
+	}
+
+
+}
+
+bool EngineSystem::traitement(int balise1, int balise2) {
+
+	return true;
+
 }
