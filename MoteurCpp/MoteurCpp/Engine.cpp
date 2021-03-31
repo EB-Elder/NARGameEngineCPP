@@ -1,11 +1,10 @@
 #include "Engine.h"
-
-// par contre lors de la definition de la fonction il faut une implementation complete
 #include "Context.h"
 #include "Timer.h"
+#include "Object.h"
 #include <iostream>
 #include <thread>
-
+#include <vector>
 
 
 Engine::Engine() {
@@ -22,7 +21,7 @@ void Engine::ProcessSystems(double elapsedTime)
 
 	float deltaTime = static_cast<float>(elapsedTime);
 
-	system.Update(deltaTime);
+	system.Update(deltaTime, nbThread, &listObject);
 
 	int loops = system.maxIterations;
 	// on sort de la boucle des que l'un des deux tests est faux
@@ -82,21 +81,188 @@ void Engine::Update(Context& context)
 	ProcessSystems(elapsedTime);
 }
 
-bool EngineSystem::Create(int nbThread, std::vector<Object*>* listeObjet) {
-
-	int threadNbObject = listeObjet->size();
-
-	for (int i = 0; i < nbThread; i++) {
-
-		fork.push_back(std::thread(&EngineSystem::traitement, i * threadNbObject, (i * threadNbObject) + threadNbObject));
-	
+vector<Object*> Engine::FindObjectsByTag(std::string tag)
+{
+	int nbObj = 0;
+	for (int i; i < listObject.size(); i++)
+	{
+		if (listObject[i]->o_tag == tag) nbObj++;
 	}
 
+	std::vector<Object*> res(nbObj);
+	for (int i = 0; i < listObject.size(); i++)
+	{
+		if (listObject[i]->o_tag == tag)
+		{
+			res.push_back(listObject[i]);
+		}
+	}
 
+	return res;
 }
 
-bool EngineSystem::traitement(int balise1, int balise2) {
+Object* Engine::FindObjectByName(std::string name)
+{
+	for (int i = 0; i < listObject.size(); i++)
+	{
+		if (listObject[i]->o_name == name)
+		{
+			return listObject[i];
+		}
+	}
+
+	return nullptr;
+}
+
+bool EngineSystem::Create(int nbThread, std::vector<Object*>* listeObjet)
+{
+	int nbObjsPerThread = listeObjet->size() / nbThread;
+
+	//si on a moins d'objets que de threads
+	if (nbObjsPerThread < 1)
+	{
+		for (int i = 0; i < nbObjsPerThread; i++)
+		{
+			fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+			{
+				//traitement create
+				for (int j = balise1; j < balise2; j++)
+				{
+					listeObjet->at(j)->Create();
+				}
+
+			}, i, i + 1));
+		}
+	}
+	else
+	{
+		//si le nombre d'objets n'est pas divisible entièrement par le nombre de threads
+		if (listeObjet->size() % nbThread != 0)
+		{
+			int reste = listeObjet->size() % nbThread;
+
+			for (int i = 0; i < nbThread - 1; i++)
+			{
+				fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+				{
+					//traitement create
+					for (int j = balise1; j < balise2; j++)
+					{
+						listeObjet->at(j)->Create();
+					}
+
+				}, i * nbObjsPerThread, i * (nbObjsPerThread + 1)));
+			}
+
+			//le dernier thread aura le reste à traiter en plus
+			fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+			{
+				//traitement create
+				for (int j = balise1; j < balise2; j++)
+				{
+					listeObjet->at(j)->Create();
+				}
+
+			}, (nbThread - 1) * nbObjsPerThread, (nbThread - 1) * (nbObjsPerThread + 1) + reste));
+		}
+		else
+		{
+			for (int i = 0; i < nbThread; i++)
+			{
+				fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+				{
+					//traitement create
+					for (int j = balise1; j < balise2; j++)
+					{
+						listeObjet->at(j)->Create();
+					}
+
+				}, i * nbObjsPerThread, i * (nbObjsPerThread + 1)));
+			}
+		}
+	}
+
+	for (int i = 0; i < fork.size(); i++)
+	{
+		fork[i].join();
+	}
 
 	return true;
+}
+
+void EngineSystem::Update(float deltaTime, int nbThread, std::vector<Object*>* listeObjet)
+{
+	int nbObjsPerThread = listeObjet->size() / nbThread;
+
+	//si on a moins d'objets que de threads
+	if (nbObjsPerThread < 1)
+	{
+		for (int i = 0; i < nbObjsPerThread; i++)
+		{
+			fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+			{
+
+				//traitement update
+				for (int j = balise1; j < balise2; j++)
+				{
+					listeObjet->at(j)->Update();
+				}
+
+			}, i, i + 1));
+		}
+	}
+	else
+	{
+		//si le nombre d'objets n'est pas divisible entièrement par le nombre de threads
+		if (listeObjet->size() % nbThread != 0)
+		{
+			int reste = listeObjet->size() % nbThread;
+
+			for (int i = 0; i < nbThread - 1; i++)
+			{
+				fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+				{
+					//traitement update
+					for (int j = balise1; j < balise2; j++)
+					{
+						listeObjet->at(j)->Update();
+					}
+
+				}, i * nbObjsPerThread, i * (nbObjsPerThread + 1)));
+			}
+
+			//le dernier thread aura le reste à traiter en plus
+			fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+			{
+				//traitement update
+				for (int j = balise1; j < balise2; j++)
+				{
+					listeObjet->at(j)->Update();
+				}
+
+			}, (nbThread - 1) * nbObjsPerThread, (nbThread - 1) * (nbObjsPerThread + 1) + reste));
+		}
+		else
+		{
+			for (int i = 0; i < nbThread; i++)
+			{
+				fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
+				{
+					//traitement update
+					for (int j = balise1; j < balise2; j++)
+					{
+						listeObjet->at(j)->Update();
+					}
+
+				}, i * nbObjsPerThread, i * (nbObjsPerThread + 1)));
+			}
+		}
+	}
+
+	for (int i = 0; i < fork.size(); i++)
+	{
+		fork[i].join();
+	}
 
 }
+

@@ -27,4 +27,23 @@ struct Object
 		o_name = name;
 		o_tag = "default";
 	}
+
+	void Create()
+	{
+		//std::cout << "CREATE OBJET " << o_name.c_str() << " TAG " << o_tag.c_str() << std::endl;
+
+		//boucle sur les composants -> composant.create
+		
+	}
+
+	void Update()
+	{
+		//std::cout << "UPDATE OBJET " << o_name.c_str() << " TAG " << o_tag.c_str() << std::endl;
+
+		//boucle sur les composants -> composant.update
+		for (auto c : listComponent)
+		{
+			c->Update();
+		}
+	}
 };

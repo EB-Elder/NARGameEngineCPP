@@ -18,7 +18,6 @@ struct EngineSystem
 	
 	vector<std::thread> fork;
 
-
 	bool Create(int nbThread, vector<Object*>* listeObjet);
 
 	void Destroy() {}
@@ -26,12 +25,7 @@ struct EngineSystem
 	void DeInitialize() {}
 
 	//update les objets via un parallèlisme
-	void Update(float deltaTime) 
-	{
-
-	}
-
-	bool traitement(int balise1, int balise2);
+	void Update(float deltaTime, int nbThread, std::vector<Object*>* listeObjet);
 
 	void FixedUpdate(float deltaTime) {}
 };
@@ -49,6 +43,9 @@ struct Engine : public InfraStructure
 
 	Engine();
 
+	//findObjet by tag
+	vector<Object*> FindObjectsByTag(std::string tag);
+	Object* FindObjectByName(std::string name);
 
 	void ProcessSystems(double elapsedTime);
 
