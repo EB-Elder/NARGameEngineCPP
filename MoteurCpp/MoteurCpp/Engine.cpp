@@ -47,7 +47,7 @@ bool Engine::Initialize()
 	// Les systemes pourraient etre cree de facon data-driven, plugins, ou en dur
 	EngineSystem* system = new EngineSystem;
 	system->Create(thread::hardware_concurrency(), &listObject);
-	system->Initialize();
+	system->Initialize(&listObject);
 
 	m_AIEngine = system;
 
@@ -62,7 +62,26 @@ void Engine::DeInitialize()
 	m_AIEngine->DeInitialize();
 	m_AIEngine->Destroy();
 
+	for (int i = 0; i < listObject.size(); i++)
+	{
+		listObject[i]->DeInitialize();
+		listObject[i]->Destroy();
+	}
+
+	listObject.clear();
+	listObject.shrink_to_fit();
+
 	std::cout << "[Engine] deinitialized\n";
+}
+
+void EngineSystem::DeInitialize()
+{
+	fork.clear();
+}
+
+void EngineSystem::Destroy()
+{
+	fork.shrink_to_fit();
 }
 
 void Engine::Update(Context& context)
@@ -192,15 +211,14 @@ bool EngineSystem::Create(int nbThread, std::vector<Object*>* listeObjet)
 void EngineSystem::Update(float deltaTime, int nbThread, std::vector<Object*>* listeObjet)
 {
 	int nbObjsPerThread = listeObjet->size() / nbThread;
-
+	
 	//si on a moins d'objets que de threads
 	if (nbObjsPerThread < 1)
 	{
-		for (int i = 0; i < nbObjsPerThread; i++)
+		for (int i = 0; i < listeObjet->size(); i++)
 		{
 			fork.push_back(std::thread([this, listeObjet](int balise1, int balise2)
 			{
-
 				//traitement update
 				for (int j = balise1; j < balise2; j++)
 				{
@@ -263,5 +281,15 @@ void EngineSystem::Update(float deltaTime, int nbThread, std::vector<Object*>* l
 		fork[i].join();
 	}
 
+	fork.clear();
 }
 
+bool EngineSystem::Initialize(std::vector<Object*>* listeObjet)
+{
+	for (int i = 0; i < listeObjet->size(); i++)
+	{
+		listeObjet->at(i)->Create();
+	}
+
+	return true;
+}

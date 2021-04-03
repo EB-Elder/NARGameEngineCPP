@@ -20,9 +20,9 @@ struct EngineSystem
 
 	bool Create(int nbThread, vector<Object*>* listeObjet);
 
-	void Destroy() {}
-	bool Initialize() { return true; }
-	void DeInitialize() {}
+	void Destroy();
+	bool Initialize(std::vector<Object*>* listeObjet);
+	void DeInitialize();
 
 	//update les objets via un parallèlisme
 	void Update(float deltaTime, int nbThread, std::vector<Object*>* listeObjet);

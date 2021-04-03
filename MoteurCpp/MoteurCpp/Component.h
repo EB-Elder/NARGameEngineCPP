@@ -17,8 +17,8 @@ struct Component
 {
 	Component() :type(TYPE::INVALID) {};
 	Component(const Component&) = delete;
-	TYPE type;
-	std::string objectName;
+	TYPE type = INVALID;
+	std::string objectName = "";
 	virtual ~Component() {};
 
 	virtual void Update()=0;
@@ -30,12 +30,12 @@ private:
 	float positionX, positionY, positionZ;
 	float rotationX, rotationY, rotationZ;
 	float scaleX, scaleY, scaleZ;
-	glm::mat4 transformMatrix = Matrix4f(1.0f);
-
+	glm::mat4 transformMatrix;
 
 public:
 	Transform(const Transform& copiedTransform)
 	{
+		transformMatrix = glm::mat4(1.0f);
 		type = copiedTransform.type;
 
 		positionX = copiedTransform.positionX;
@@ -54,6 +54,7 @@ public:
 
 	Transform()
 	{
+		transformMatrix = glm::mat4(1.0f);
 		type = TRANSFORM;
 
 		positionX = 0.0f;
@@ -90,6 +91,7 @@ public:
 
 	Transform(float px, float py, float pz)
 	{
+		transformMatrix = glm::mat4(1.0f);
 		type = TRANSFORM;
 
 		positionX = px;
@@ -125,13 +127,16 @@ public:
 		transformMatrix[3][3] = 1.0f;
 	}
 
-	~Transform(){}
+	~Transform()
+	{
+		std::cout << "DESTRUCTION COMPONENT TRANSFORM OF " << objectName.c_str() << std::endl;
+	}
 
 	void Update()
 	{
-		positionX = transformMatrix[3][0];
-		positionY = transformMatrix[3][1];
-		positionZ = transformMatrix[3][2];
+		positionX = transformMatrix[0][3];
+		positionY = transformMatrix[1][3];
+		positionZ = transformMatrix[2][3];
 
 		scaleX = transformMatrix[0][0];
 		scaleY = transformMatrix[1][1];
@@ -201,6 +206,11 @@ struct Behavior : public Component
 	Behavior()
 	{
 		type = BEHAVIOR;
+	}
+
+	~Behavior()
+	{
+		std::cout << "DESTRUCTION COMPONENT BEHAVIOR OF " << objectName.c_str() << std::endl;
 	}
 
 	void Update()

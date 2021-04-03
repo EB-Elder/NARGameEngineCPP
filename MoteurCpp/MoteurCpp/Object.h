@@ -1,12 +1,13 @@
 #pragma once
 #include "Component.h"
 #include <vector>
+#include <memory>
 
 struct Object
 {
 	std::string o_name;
 	std::string o_tag;
-	std::vector<Component*> listComponent;
+	std::vector<std::shared_ptr<Component>> listComponent;
 
 	Object()
 	{
@@ -16,7 +17,9 @@ struct Object
 		Transform t(0.0f, 0.0f, 0.0f);
 		t.objectName = o_name;
 
-		listComponent.push_back(&t);
+		auto ptr = std::make_shared<Transform>(t);
+
+		listComponent.push_back(ptr);
 	}
 
 	Object(std::string name)
@@ -25,9 +28,11 @@ struct Object
 		o_tag = "default";
 
 		Transform t(0.0f, 0.0f, 0.0f);
-		t.objectName = o_name;
+		t.objectName = name;
 
-		listComponent.push_back(&t);
+		auto ptr = std::make_shared<Transform>(t);
+
+		listComponent.push_back(ptr);
 	}
 
 	Object(std::string name, float px, float py, float pz)
@@ -36,9 +41,11 @@ struct Object
 		o_tag = "default";
 
 		Transform t(px, py, pz);
-		t.objectName = o_name;
+		t.objectName = name;
 
-		listComponent.push_back(&t);
+		auto ptr = std::make_shared<Transform>(t);
+
+		listComponent.push_back(ptr);
 	}
 
 	Object(std::string name, std::string tag, float px, float py, float pz)
@@ -47,9 +54,11 @@ struct Object
 		o_tag = tag;
 
 		Transform t(px, py, pz);
-		t.objectName = o_name;
+		t.objectName = name;
 
-		listComponent.push_back(&t);
+		auto ptr = std::make_shared<Transform>(t);
+
+		listComponent.push_back(ptr);
 	}
 
 	void Create()
@@ -57,14 +66,33 @@ struct Object
 		std::cout << "CREATE OBJET " << o_name.c_str() << " TAG " << o_tag.c_str() << std::endl;		
 	}
 
+	void DeInitialize()
+	{
+		std::cout << "DEINITIALIZATION OBJECT " << o_name.c_str() << std::endl;
+
+		//détruire les composants
+		for (int i = 0; i < listComponent.size(); i++)
+		{
+			listComponent[i]->~Component();
+		}
+
+		listComponent.clear();
+	}
+
+	void Destroy()
+	{
+		std::cout << "DESTRUCTION OBJECT " << o_name.c_str() << std::endl;
+		listComponent.shrink_to_fit();
+	}
+
 	void Update()
 	{
-		std::cout << "UPDATE OBJET " << o_name.c_str() << " TAG " << o_tag.c_str() << std::endl;
-
 		//boucle sur les composants -> composant.update
-		for (auto c : listComponent)
+		for (int i = 0; i < listComponent.size(); i++)
 		{
-			c->Update();
+			listComponent.at(i)->Update();
 		}
+
+		std::cout << "UPDATE OBJET " << o_name.c_str() << " TAG " << o_tag.c_str() << std::endl;
 	}
 };
