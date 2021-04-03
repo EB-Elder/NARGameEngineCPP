@@ -49,13 +49,10 @@ struct Engine : public InfraStructure
 
 	void ProcessSystems(double elapsedTime);
 
-	// ---
-
 	bool Initialize() final;
 
 	void DeInitialize() final;
 
-	// ce n'est pas une fonction virtuelle !
 	void Update(Context& context);
 
 };

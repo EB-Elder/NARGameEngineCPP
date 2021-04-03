@@ -65,7 +65,6 @@ void Engine::DeInitialize()
 	std::cout << "[Engine] deinitialized\n";
 }
 
-// ce n'est pas une fonction virtuelle !
 void Engine::Update(Context& context)
 {
 	std::cout << "[Engine] update\n";
@@ -84,7 +83,7 @@ void Engine::Update(Context& context)
 vector<Object*> Engine::FindObjectsByTag(std::string tag)
 {
 	int nbObj = 0;
-	for (int i; i < listObject.size(); i++)
+	for (int i = 0; i < listObject.size(); i++)
 	{
 		if (listObject[i]->o_tag == tag) nbObj++;
 	}

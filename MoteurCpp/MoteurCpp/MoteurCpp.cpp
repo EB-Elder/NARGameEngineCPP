@@ -152,6 +152,12 @@ int main()
 {
 	Application gameEngine;
 
+	Object o("Cube", "object", 0.0f, 1.0f, 5.0f);
+	Object o2("Camera", "camera", 0.0f, 0.0f, 0.0f);
+
+	gameEngine.engine_context.engine.listObject.push_back(&o);
+	gameEngine.engine_context.engine.listObject.push_back(&o2);
+
 	gameEngine.Run();
 
 	return 0;

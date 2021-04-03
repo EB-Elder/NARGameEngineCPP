@@ -18,6 +18,7 @@ struct Component
 	Component() :type(TYPE::INVALID) {};
 	Component(const Component&) = delete;
 	TYPE type;
+	std::string objectName;
 	virtual ~Component() {};
 
 	virtual void Update()=0;
@@ -36,21 +37,98 @@ public:
 	Transform(const Transform& copiedTransform)
 	{
 		type = copiedTransform.type;
+
+		positionX = copiedTransform.positionX;
+		positionY = copiedTransform.positionY;
+		positionZ = copiedTransform.positionZ;
+		rotationX = copiedTransform.rotationX;
+		rotationY = copiedTransform.rotationY;
+		rotationZ = copiedTransform.rotationZ;
+		scaleX = copiedTransform.scaleX;
+		scaleY = copiedTransform.scaleY;
+		scaleZ = copiedTransform.scaleZ;
+
+		transformMatrix = copiedTransform.transformMatrix;
+		type = copiedTransform.type;
 	}
 
 	Transform()
 	{
 		type = TRANSFORM;
+
+		positionX = 0.0f;
+		positionY = 0.0f;
+		positionZ = 0.0f;
+		rotationX = 0.0f;
+		rotationY = 0.0f;
+		rotationZ = 0.0f;
+
+		scaleX = 1.0f;
+		scaleY = 1.0f;
+		scaleZ = 1.0f;
+
+		transformMatrix[0][0] = 1.0f;
+		transformMatrix[0][1] = 0.0f;
+		transformMatrix[0][2] = 0.0f;
+		transformMatrix[0][3] = 0.0f;
+
+		transformMatrix[1][0] = 0.0f;
+		transformMatrix[1][1] = 1.0f;
+		transformMatrix[1][2] = 0.0f;
+		transformMatrix[1][3] = 0.0f;
+
+		transformMatrix[2][0] = 0.0f;
+		transformMatrix[2][1] = 0.0f;
+		transformMatrix[2][2] = 1.0f;
+		transformMatrix[2][3] = 0.0f;
+
+		transformMatrix[3][0] = 0.0f;
+		transformMatrix[3][1] = 0.0f;
+		transformMatrix[3][2] = 0.0f;
+		transformMatrix[3][3] = 1.0f;
 	}
 
-	~Transform()
+	Transform(float px, float py, float pz)
 	{
+		type = TRANSFORM;
 
+		positionX = px;
+		positionY =	py;
+		positionZ =	pz;
+
+		rotationX = 0.0f;
+		rotationY = 0.0f;
+		rotationZ = 0.0f;
+
+		scaleX = 1.0f;
+		scaleY = 1.0f;
+		scaleZ = 1.0f;
+
+		transformMatrix[0][0] = 1.0f;
+		transformMatrix[0][1] = 0.0f;
+		transformMatrix[0][2] = 0.0f;
+		transformMatrix[0][3] = px;
+
+		transformMatrix[1][0] = 0.0f;
+		transformMatrix[1][1] = 1.0f;
+		transformMatrix[1][2] = 0.0f;
+		transformMatrix[1][3] = py;
+
+		transformMatrix[2][0] = 0.0f;
+		transformMatrix[2][1] = 0.0f;
+		transformMatrix[2][2] = 1.0f;
+		transformMatrix[2][3] = pz;
+
+		transformMatrix[3][0] = 0.0f;
+		transformMatrix[3][1] = 0.0f;
+		transformMatrix[3][2] = 0.0f;
+		transformMatrix[3][3] = 1.0f;
 	}
+
+	~Transform(){}
 
 	void Update()
 	{
-		std::cout << "UPDATE TRANSFORM COMPONENT" << std::endl;
 		positionX = transformMatrix[3][0];
 		positionY = transformMatrix[3][1];
 		positionZ = transformMatrix[3][2];
@@ -58,6 +136,8 @@ public:
 		scaleX = transformMatrix[0][0];
 		scaleY = transformMatrix[1][1];
 		scaleZ = transformMatrix[2][2];
+
+		std::cout << "UPDATE TRANSFORM COMPONENT OF " << objectName.c_str() << " in position (" << positionX << ", " << positionY << ", " << positionZ << ")" << std::endl;
 	}
 
 	void Translate(float newX, float newY, float newZ)
@@ -72,6 +152,7 @@ public:
 		rotationX = angleX;
 		rotationY = angleY;
 		rotationZ = angleZ;
+
 		if (angleX != 0)
 		{
 			transformMatrix = glm::rotate(transformMatrix, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -120,5 +201,10 @@ struct Behavior : public Component
 	Behavior()
 	{
 		type = BEHAVIOR;
+	}
+
+	void Update()
+	{
+		std::cout << "UPDATE BEHAVIOR COMPONENT OF " << objectName.c_str() << std::endl;
 	}
 };
